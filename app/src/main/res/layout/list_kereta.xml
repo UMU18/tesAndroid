@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/jamSampai"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintStart_toStartOf="@+id/jamBerangkat"
+        app:layout_constraintTop_toBottomOf="@+id/jamBerangkat" />
+
+    <TextView
+        android:id="@+id/seatAvail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textColor="@color/design_default_color_primary"
+        app:layout_constraintStart_toStartOf="@+id/jamSampai"
+        app:layout_constraintTop_toBottomOf="@+id/jamSampai" />
+
+    <TextView
+        android:id="@+id/namaKereta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="TextView"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="15dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/jamBerangkat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textColor="@color/colorAccent"
+        app:layout_constraintStart_toStartOf="@+id/namaKereta"
+        app:layout_constraintTop_toBottomOf="@+id/namaKereta" />
+
+    <TextView
+        android:id="@+id/kelas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        android:textColor="@color/colorPrimary"
+        app:layout_constraintStart_toStartOf="@+id/seatAvail"
+        app:layout_constraintTop_toBottomOf="@+id/seatAvail" />
+</android.support.constraint.ConstraintLayout>
