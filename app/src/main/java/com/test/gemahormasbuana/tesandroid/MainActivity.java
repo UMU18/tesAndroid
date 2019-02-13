@@ -18,13 +18,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
@@ -33,7 +34,6 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -44,11 +44,10 @@ public class MainActivity extends AppCompatActivity
     TextView _name, _mobile, _email;
     ImageView _image;
     Button _changePic;
-    public static final String EXTRA_MESSAGE= "com.test.gemahormasbuana.tes.MESSAGE";
+    public static final String EXTRA_MESSAGE = "com.test.gemahormasbuana.tes.MESSAGE";
     String msg;
     Bitmap bitmap;
-    private static int RESULT_LOAD_IMAGE=1;
-    String url2 = "https://api.tiketextra.com/test/updateUserImage?token="+msg;
+    private static int RESULT_LOAD_IMAGE = 1;
 
 
 
@@ -60,20 +59,20 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         final Intent intent = getIntent();
         String message = intent.getStringExtra(LoginActivity.EXTRA_MESSAGE);
-        if (message==""){
+        if (message == "") {
             message = intent.getStringExtra(BankActivity.EXTRA_MESSAGE);
         }
-        if(message==""){
+        if (message == "") {
             message = intent.getStringExtra(KeretaActivity.EXTRA_MESSAGE);
         }
-        msg=message;
+        msg = message;
 
 
-        _name= (TextView) findViewById(R.id.showName);
-        _mobile=(TextView) findViewById(R.id.showMobile);
-        _email=(TextView) findViewById(R.id.showEmail);
-        _image=(ImageView) findViewById(R.id.showImage);
-        _changePic=(Button) findViewById(R.id.changePic);
+        _name = (TextView) findViewById(R.id.showName);
+        _mobile = (TextView) findViewById(R.id.showMobile);
+        _email = (TextView) findViewById(R.id.showEmail);
+        _image = (ImageView) findViewById(R.id.showImage);
+        _changePic = (Button) findViewById(R.id.changePic);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -94,13 +93,12 @@ public class MainActivity extends AppCompatActivity
             }
 
 
-
         });
 
 
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-        String url = "https://api.tiketextra.com/auth/getUser?token="+msg;
-        String url1 = "https://api.tiketextra.com/test/getUserImage?token="+msg;
+        String url = "https://api.tiketextra.com/auth/getUser?token=" + msg;
+        String url1 = "https://api.tiketextra.com/test/getUserImage?token=" + msg;
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
@@ -133,19 +131,18 @@ public class MainActivity extends AppCompatActivity
 
         InputStreamVolleyRequest insRequest = new InputStreamVolleyRequest(Request.Method.GET, url1,
                 new Response.Listener<byte[]>() {
-            @Override
-            public void onResponse(byte[] response) {
-                Bitmap decodeByte = BitmapFactory.decodeByteArray(response,0, response.length );
-                if(decodeByte==null){
-                    _image.setImageResource(R.drawable.ic_menu_camera);
-                }
-                else{
-                    _image.setImageBitmap(decodeByte);
-                }
+                    @Override
+                    public void onResponse(byte[] response) {
+                        Bitmap decodeByte = BitmapFactory.decodeByteArray(response, 0, response.length);
+                        if (decodeByte == null) {
+                            _image.setImageResource(R.drawable.ic_menu_camera);
+                        } else {
+                            _image.setImageBitmap(decodeByte);
+                        }
 
-            }
+                    }
 
-        }, new Response.ErrorListener(){
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 _image.setImageResource(R.drawable.ic_menu_camera);
@@ -158,20 +155,21 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public class InputStreamVolleyRequest extends Request<byte[]>{
+    public class InputStreamVolleyRequest extends Request<byte[]> {
 
         private final Response.Listener<byte[]> listener;
         private Map<String, String> params;
         public Map<String, String> responseHeaders;
 
-        public InputStreamVolleyRequest(int method, String url, Response.Listener<byte[]> listener, Response.ErrorListener errorListener){
+        public InputStreamVolleyRequest(int method, String url, Response.Listener<byte[]> listener, Response.ErrorListener errorListener) {
             super(method, url, errorListener);
             setShouldCache(false);
             this.listener = listener;
             this.params = params;
         }
+
         @Override
-        protected Map<String, String> getParams() throws AuthFailureError{
+        protected Map<String, String> getParams() throws AuthFailureError {
             return params;
         }
 
@@ -188,69 +186,96 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onActivityResult(int reqCode, int resultCode, Intent data){
-        super.onActivityResult(reqCode,resultCode,data);
-        if(resultCode==RESULT_OK){
+    protected void onActivityResult(int reqCode, int resultCode, Intent data) {
+        super.onActivityResult(reqCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
             try {
-                final Uri imageUri=data.getData();
+                final Uri imageUri = data.getData();
+
                 final InputStream imageStream = getContentResolver().openInputStream(imageUri);
                 bitmap = BitmapFactory.decodeStream(imageStream);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+
+                String nama = "namabaru";
 
                 _image.setImageBitmap(bitmap);
 
-                uploaduserimage();
+                saveProfileAccount();
 
 
             } catch (Exception e) {
+                Log.e("error nih ye", "onActivityResult: "+e);
                 e.printStackTrace();
             }
         }
     }
 
-    public void uploaduserimage(){
-
-        RequestQueue requestQueue = Volley.newRequestQueue(MainActivity.this);
+    private void saveProfileAccount() {
         String url2 = "https://api.tiketextra.com/test/updateUserImage?token="+msg;
-
-        InputStreamVolleyRequest is = new InputStreamVolleyRequest(Request.Method.POST, url2, new Response.Listener<byte[]>() {
+        VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, url2, new Response.Listener<NetworkResponse>() {
 
             @Override
-            public void onResponse(byte[] response) {
-                Log.i("Myresponse", "" + response);
-                Toast.makeText(MainActivity.this, "" + response, Toast.LENGTH_SHORT).show();
+            public void onResponse(NetworkResponse response) {
+                String resultResponse = new String(response.data);
+                Log.i("responSaya", "onResponse: " + resultResponse);
+
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.i("Mysmart",""+error);
-                Toast.makeText(MainActivity.this, ""+error, Toast.LENGTH_SHORT).show();
+                NetworkResponse networkResponse = error.networkResponse;
+                String errorMessage = "Unknown error";
+                if (networkResponse == null) {
+                    if (error.getClass().equals(TimeoutError.class)) {
+                        errorMessage = "Request timeout";
+                    } else if (error.getClass().equals(NoConnectionError.class)) {
+                        errorMessage = "Failed to connect server";
+                    }
+                } else {
+                    String result = new String(networkResponse.data);
+                    try {
+                        JSONObject response = new JSONObject(result);
+                        String status = response.getString("status");
+                        String message = response.getString("message");
+
+                        Log.e("Error Status", status);
+                        Log.e("Error Message", message);
+
+                        if (networkResponse.statusCode == 404) {
+                            errorMessage = "Resource not found";
+                        } else if (networkResponse.statusCode == 401) {
+                            errorMessage = message+" Please login again";
+                        } else if (networkResponse.statusCode == 400) {
+                            errorMessage = message+ " Check your inputs";
+                        } else if (networkResponse.statusCode == 500) {
+                            errorMessage = message+" Something is getting wrong";
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.i("Error", errorMessage);
+                error.printStackTrace();
             }
         }){
 
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String,String> param = new HashMap<>();
-                String images = getStringImage(bitmap).toString();
-                Log.i("Mynewsam",""+images);
-                param.put("image",images);
-                return param;
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                // file name could found file base or direct access from real path
+                // for now just get bitmap data from ImageView
+                params.put("userfile", new DataPart("updateImage.jpg", AppHelper.getFileDataFromDrawable(getBaseContext(), _image.getDrawable()), "image/jpeg"));
+
+                return params;
             }
+
         };
-
-        requestQueue.add(is);
-
+        VolleySingleton.getInstance(getBaseContext()).addToRequestQueue(multipartRequest);
 
     }
 
-    public byte[] getStringImage(Bitmap bitmap){
-        Log.i("MyHitesh",""+bitmap);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG,100,stream);
-        byte[] bytesArray = stream.toByteArray();
-        ByteArrayInputStream bs = new ByteArrayInputStream(bytesArray);
-
-        return bytesArray;
-    }
 
     @Override
     public void onBackPressed() {
@@ -294,11 +319,11 @@ public class MainActivity extends AppCompatActivity
             // Handle the camera action
         } else if (id == R.id.nav_bank) {
             Intent intent = new Intent(MainActivity.this, BankActivity.class);
-            intent.putExtra(EXTRA_MESSAGE,msg);
+            intent.putExtra(EXTRA_MESSAGE, msg);
             startActivity(intent);
         } else if (id == R.id.nav_kereta) {
             Intent intent = new Intent(MainActivity.this, KeretaActivity.class);
-            intent.putExtra(EXTRA_MESSAGE,msg);
+            intent.putExtra(EXTRA_MESSAGE, msg);
             startActivity(intent);
         }
 
@@ -306,4 +331,7 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+
 }
